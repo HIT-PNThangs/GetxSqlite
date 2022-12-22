@@ -33,20 +33,22 @@ class ProductDatabaseHelper {
     if (_productDb == null) {
       _productDb = await initializeDatabase();
     }
+
     return _productDb!;
   }
 
   Future<Database> initializeDatabase() async {
     Directory directory = await getApplicationDocumentsDirectory();
     String path = directory.path + 'products.db';
-    var myDatabase = await openDatabase(path, version: 1, onCreate: _createDb);
-    return myDatabase;
+
+    return await openDatabase(path, version: 1, onCreate: _createDb);;
   }
 
   void _createDb(Database db, int newVersion) async {
     await db.execute("CREATE TABLE $table"
         "($colId INTEGER PRIMARY KEY AUTOINCREMENT,"
         "$colName TEXT, $colDescription TEXT, $colPrice TEXT, $colImage TEXT)");
+
     await db.execute('CREATE TABLE $cartTable'
         "($colId INTEGER PRIMARY KEY AUTOINCREMENT,"
         "$colName TEXT, $colDescription TEXT, $colPrice TEXT, $colImage TEXT)");
@@ -65,7 +67,6 @@ class ProductDatabaseHelper {
   }
 
   Future<int> insertProduct(Product product, {cart = false}) async {
-    // print(cart);
     Database db = await this.database;
     var result = await db.insert(cart ? cartTable : table, product.toMap());
     print(result);
@@ -73,17 +74,14 @@ class ProductDatabaseHelper {
   }
 
   Future<int> updateProduct(Product product, {cart = false}) async {
-    // print("updating task ${task.id} ${task.name} current status ${task.completed}");
     var db = await this.database;
     var result = await db.update(cart ? cartTable : table, product.toMap(), where: '$colId = ?', whereArgs: [product.id]);
     return result;
   }
 
   Future<int> deleteProduct(int id, {cart = false}) async {
-    // print("Deleting Product with id: $id ");
     var db = await this.database;
     int result = await db.delete(cart ? cartTable : table, where: '$colId = ?', whereArgs: [id]);
-    // print("Delete result: $result");
     return result;
   }
 
